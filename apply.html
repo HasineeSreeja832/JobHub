@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Job</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('https://source.unsplash.com/1600x900/?office,work') no-repeat center center/cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            overflow: hidden;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .container {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: left;
+            animation: slideUp 1s ease-in-out;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 12px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #e68900;
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Apply for <span id="jobTitle"></span></h2>
+        <form id="jobApplicationForm">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <input type="email" id="email" placeholder="Your Email" required>
+            <input type="text" id="contact" placeholder="Your Contact Number" required>
+            <textarea id="jobdetails" placeholder="Job Details" rows="3" required></textarea>
+            <textarea id="experience" placeholder="Your Experience" rows="4" required></textarea>
+            <input type="file" id="resume" accept=".pdf,.doc,.docx" required>
+            <button type="submit">Submit Application</button>
+        </form>
+    </div>
+
+    <script>
+        function getJobTitle() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('job') || 'Unknown Job';
+        }
+
+        document.getElementById('jobTitle').textContent = getJobTitle();
+
+        document.getElementById('jobApplicationForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const contact = document.getElementById('contact').value;
+            const jobdetails = document.getElementById('jobdetails').value;
+            const experience = document.getElementById('experience').value;
+            const resumeFile = document.getElementById('resume').files[0];
+            const job = getJobTitle();
+
+            if (!name || !email || !contact || !experience || !jobdetails || !resumeFile) {
+                alert('Please fill out all fields correctly!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const resumeData = event.target.result;
+                const mimeType = resumeFile.type;
+                const application = {
+                    name, email, contact, jobdetails, experience, job,
+                    resumeName: resumeFile.name, resumeData, mimeType
+                };
+
+                let appliedJobs = JSON.parse(localStorage.getItem('appliedJobs')) || [];
+                appliedJobs.push(application);
+                localStorage.setItem('appliedJobs', JSON.stringify(appliedJobs));
+
+                alert(`Application submitted successfully for ${job}!`);
+                window.location.href = "dashboard.html";
+            };
+            reader.readAsDataURL(resumeFile);
+        });
+    </script>
+</body>
+</html>

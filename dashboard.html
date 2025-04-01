@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('https://source.unsplash.com/1600x900/?workspace,technology') no-repeat center center/cover;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            overflow: hidden;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .container {
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            animation: slideUp 1s ease-in-out;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #c62828;
+            transform: scale(1.05);
+        }
+
+        .back-btn {
+            margin-top: 1rem;
+            background-color: #1976d2;
+        }
+
+        .back-btn:hover {
+            background-color: #1565c0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Hidden login screen */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-box input {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .login-box button {
+            background-color: #4CAF50;
+            padding: 10px;
+            width: 100%;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .login-box button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <h3>Enter Your Email to Access</h3>
+            <input type="email" id="emailInput" placeholder="Enter your email">
+            <button onclick="checkAccess()">Login</button>
+            <p id="error" style="color: red; display: none;">Access Denied!</p>
+        </div>
+    </div>
+
+    <div class="container" id="dashboard" style="display: none;">
+        <h2>Application Dashboard</h2>
+        <table id="applicationsTable">
+            <thead>
+                <tr>
+                    <th>Job Title</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Experience</th>
+                    <th>Resume</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody id="applicationsBody"></tbody>
+        </table>
+        <button class="back-btn" onclick="goBack()">Back to Jobs</button>
+        <button onclick="clearApplications()">Clear All Applications</button>
+    </div>
+
+    <script>
+        // Allowed Emails
+        const allowedEmails = ["n210841@rguktn.ac.in", "n210081@rguktn.ac.in","sreeja@gmail.com","trisha@gmai.com",
+        "chim@gmail.com"];
+
+        function checkAccess() {
+            const userEmail = document.getElementById('emailInput').value;
+            
+            if (allowedEmails.includes(userEmail)) {
+                document.getElementById('loginScreen').style.display = "none";
+                document.getElementById('dashboard').style.display = "block";
+                loadApplications();
+            } else {
+                document.getElementById('error').style.display = "block";
+            }
+        }
+
+        function loadApplications() {
+            const applications = JSON.parse(localStorage.getItem('appliedJobs')) || [];
+            const tableBody = document.getElementById('applicationsBody');
+            tableBody.innerHTML = '';
+
+            if (applications.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7">No applications found!</td></tr>`;
+                return;
+            }
+
+            applications.forEach((app, index) => {
+                const downloadData = app.resumeData || '';
+                const downloadLink = downloadData.includes('data:') ? downloadData : `data:${app.mimeType};base64,${downloadData}`;
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${app.job}</td>
+                        <td>${app.name}</td>
+                        <td>${app.email}</td>
+                        <td>${app.contact}</td>
+                        <td>${app.experience}</td>
+                        <td><a href="${downloadLink}" download="${app.resumeName}" target="_blank" rel="noopener noreferrer" style="color: blue;">Resume</a></td>
+                        <td><button onclick="deleteApplication(${index})">Delete</button></td>
+                    </tr>`;
+            });
+        }
+
+        function deleteApplication(index) {
+            let applications = JSON.parse(localStorage.getItem('appliedJobs')) || [];
+            applications.splice(index, 1);
+            localStorage.setItem('appliedJobs', JSON.stringify(applications));
+            loadApplications();
+        }
+
+        function clearApplications() {
+            if (confirm('Are you sure you want to clear all applications?')) {
+                localStorage.removeItem('appliedJobs');
+                loadApplications();
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'jobs.html';
+        }
+    </script>
+</body>
+</html>

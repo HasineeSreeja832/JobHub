@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            margin: 0;
+            text-align: center;
+            color: black;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .job-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .job-card {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            color: black;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .job-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            background: #FFEB3B;
+            color: black;
+        }
+
+        button {
+            margin-top: 12px;
+            padding: 12px 20px;
+            background: linear-gradient(45deg, #fdd835, #fbc02d);
+            color: black;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.3s, transform 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #fbc02d, #f9a825);
+            transform: scale(1.08);
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            color: black;
+            display: none;
+        }
+
+        input, select {
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 40%;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup" id="popup">
+        <h2>Welcome to the Job Portal!</h2>
+        <button onclick="closePopup()">Close</button>
+    </div>
+    <div class="container">
+        <h2>Find Your Dream Job</h2>
+        <div class="filter-section">
+            <input type="text" id="searchInput" onkeyup="filterJobs()" placeholder="Search by job title...">
+            <select id="salaryFilter" onchange="filterJobs()">
+                <option value="">Filter by Salary</option>
+                <option value="50">50k+</option>
+                <option value="75">75k+</option>
+                <option value="100">100k+</option>
+            </select>
+            <br>
+            <button onclick="resetFilters()">Reset Filters</button>
+        </div>
+        <div class="job-list" id="jobList"></div>
+        <!-- View Applications Button -->
+        <button onclick="window.location.href='dashboard.html'" 
+            style="margin-top: 1.5rem; padding: 10px 20px; background-color: #388e3c; color: black; 
+            border: none; border-radius: 5px; cursor: pointer;">
+            View Applications
+        </button>
+
+    </div>
+    
+    <script>
+        const jobs = [
+            { title: "Software Engineer", salary: 90 },
+            { title: "Data Analyst", salary: 60 },
+            { title: "Product Manager", salary: 100 },
+            { title: "Marketing Specialist", salary: 55 },
+            { title: "Cybersecurity Analyst", salary: 85 },
+            { title: "Web Developer", salary: 75 },
+            { title: "AI Engineer", salary: 120 },
+            { title: "Network Administrator", salary: 65 },
+            { title: "Cloud Engineer", salary: 95 },
+            { title: "IT Support Specialist", salary: 50 },
+            { title: "Business Analyst", salary: 70 },
+            { title: "UX Designer", salary: 80 },
+            { title: "Content Writer", salary: 45 },
+            { title: "HR Manager", salary: 65 },
+            { title: "Finance Executive", salary: 90 },
+            { title: "Legal Consultant", salary: 100 },
+            { title: "Social Media Manager", salary: 55 },
+            { title: "Graphic Designer", salary: 60 },
+            { title: "Mobile App Developer", salary: 85 },
+            { title: "DevOps Engineer", salary: 95},
+            {title: "Stock Market Analyst", salary: 120},
+            {title: "Digital Marketing Manager", salary: 80},
+            {title: "Sales Executive", salary: 70},
+            {title: "Customer Support Specialist", salary: 50},
+            {title: "Quality Assurance Analyst", salary: 65},
+            {title: "Technical Writer", salary: 45},
+            {title: "Database Administrator", salary: 75},
+            {title: "System Administrator", salary: 80},
+            {title: "Operations Manager", salary: 100},
+            {title: "Project Manager", salary: 90},
+            {title: "UI Designer", salary: 70},
+            {title: "Blockchain Developer", salary: 110},
+        ];
+
+        function loadJobs(jobsToShow = jobs) {
+            const jobListDiv = document.getElementById('jobList');
+            jobListDiv.innerHTML = "";
+            jobsToShow.forEach(job => {
+                jobListDiv.innerHTML += `
+                    <div class="job-card">
+                        <h3>${job.title}</h3>
+                        <p>Company: Random Corp</p>
+                        <p>Location: Flexible</p>
+                        <p>Salary: ${job.salary}k/year</p>
+                        <button onclick="applyForJob('${job.title}')">Apply Now</button>
+                    </div>
+                `;
+            });
+        }
+        function openForm(jobTitle) {
+            document.getElementById('applyForm').style.display = 'block';
+            document.getElementById('selectedJob').textContent = jobTitle;
+        }
+
+        document.getElementById('jobApplicationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const contact = document.getElementById('contact').value;
+            const experience = document.getElementById('experience').value;
+            const job = document.getElementById('selectedJob').textContent;
+
+            if (!name || !email || !contact || !experience) {
+                alert("All fields are required!");
+                return;
+            }
+
+            alert(`Application submitted successfully for ${job}!\nName: ${name}\nEmail: ${email}\nContact: ${contact}`);
+            document.getElementById('jobApplicationForm').reset();
+            document.getElementById('applyForm').style.display = 'none';
+        });
+
+        window.onload = loadJobs;
+    
+    function applyForJob(jobTitle) {
+        window.location.href = `apply.html?job=${encodeURIComponent(jobTitle)}`;
+    }
+
+        function filterJobs() {
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const salaryFilter = document.getElementById('salaryFilter').value;
+            const filteredJobs = jobs.filter(job =>
+                job.title.toLowerCase().includes(searchValue) &&
+                (!salaryFilter || job.salary >= parseInt(salaryFilter))
+            );
+            loadJobs(filteredJobs);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = "";
+            document.getElementById('salaryFilter').value = "";
+            loadJobs(jobs);
+        }
+
+        function showPopup() {
+            document.getElementById('popup').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        window.onload = function () {
+            showPopup();
+            loadJobs();
+        };
+    </script>
+</body>
+</html>
